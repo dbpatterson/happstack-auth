@@ -216,12 +216,14 @@ performLogin' secs user = do
  - Handles data from a login form to log the user in.  The form must supply
  - fields named "username" and "password".
  -}
-loginHandler successResponse failResponse = withData handler
+loginHandler successResponse = loginHandler' (\_ -> successResponse) 
+
+loginHandler' successResponse failResponse = withData handler
   where handler (UserAuthInfo user pass) = do
           mu <- query $ AuthUser user pass
           case mu of
             Just u -> do performLogin u
-                         successResponse
+                         (successResponse (Username user))
             Nothing -> failResponse
 
 {-

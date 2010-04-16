@@ -206,9 +206,11 @@ instance FromData UserAuthInfo where
   fromData = liftM2 UserAuthInfo (look "username")
              (look "password" `mplus` return "nopassword")
 
-performLogin user = do
+performLogin = performLogin' (-1)
+
+performLogin' secs user = do
   key <- update $ NewSession (SessionData (userid user) (username user))
-  addCookie (2678400) (mkCookie sessionCookie (show key))
+  addCookie secs (mkCookie sessionCookie (show key))
 
 {-
  - Handles data from a login form to log the user in.  The form must supply

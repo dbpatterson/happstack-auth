@@ -226,6 +226,12 @@ loginHandler' successResponse failResponse = withData handler
                          (successResponse (Username user))
             Nothing -> failResponse
 
+processLogin user pass = do mbU <- query $ AuthUser user pass
+                            case mbU of
+                              Just u -> do performLogin u
+                                           return True
+                              Nothing -> return False
+
 {-
  - Logout page
  -}

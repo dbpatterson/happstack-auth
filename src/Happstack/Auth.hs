@@ -261,6 +261,10 @@ checkAndAdd uExists good user pass = do
                   good
     Nothing -> uExists
 
+{-
+ - Handles data from a new user registration form.  The form must supply
+ - fields named "username", "password", and "password2".
+ -}
 newUserHandler existsOrInvalid nomatch succ = newUserHandler' existsOrInvalid nomatch (const succ)
 
 {- newUserHandler' passes the username of just created account to
@@ -275,10 +279,6 @@ newUserHandler' existsOrInvalid nomatch succ = withData handler
         saneUsername str = foldl1 (&&) $ map isAlphaNum str
 
 
-{-
- - Handles data from a new user registration form.  The form must supply
- - fields named "username", "password", and "password2".
- -}
 newAccountHandler noMatch uExists good (NewUserInfo user pass1 pass2)
   | pass1 == pass2 = checkAndAdd uExists good (Username user) pass1
   | otherwise = noMatch
@@ -296,6 +296,16 @@ changePassword user oldpass newpass = do
                    return True
     Nothing  -> return False
 
+resetPassword user pass pass2 = if pass == pass2 
+                                  then do
+                                    mu <- query $ GetUser user
+                                    case mu of
+                                      (Just u) -> do
+                                              h <- liftIO $ buildSaltAndHash pass
+                                              update $ UpdateUser (u {userpass = h})
+                                              return True
+                                      Nothing -> return False
+                                else return False
 {-
  - Requiring a login
  -}

@@ -212,6 +212,17 @@ performLogin' secs user = do
   key <- update $ NewSession (SessionData (userid user) (username user))
   addCookie secs (mkCookie sessionCookie (show key))
 
+{- 
+ - this is useful because in certain cases (for example, after activating
+ - an account via a confirmation token) we want to log a person in without
+ - having their password.
+ -}
+forceLogin username = do mbU <- query $ GetUser username
+                         case mbU of
+                           Just u -> do performLogin u
+                                        return True
+                           Nothing -> return False
+
 {-
  - Handles data from a login form to log the user in.  The form must supply
  - fields named "username" and "password".
